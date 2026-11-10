@@ -1,52 +1,39 @@
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Panda Gamer School</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 *{box-sizing:border-box}
-body{margin:0;background:#091323;color:white;font-family:Arial,sans-serif}
-header{background:#111f33;padding:16px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px}
+body{margin:0;background:#091323;color:white;font-family:Arial}
+header{background:#111f33;padding:16px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px}
 h1,h2{color:#10d99a}
-main{max-width:1000px;margin:auto;padding:20px}
-nav{display:flex;gap:8px;flex-wrap:wrap;padding:15px}
-button,.btn{border:0;padding:11px 15px;border-radius:8px;background:#10d99a;color:#06251b;font-weight:bold;cursor:pointer;text-decoration:none;display:inline-block}
-button:hover,.btn:hover{filter:brightness(1.15)}
-input,textarea{width:100%;padding:12px;margin:7px 0 14px;background:#0b1729;color:white;border:1px solid #34445b;border-radius:8px}
-.card{background:#14243a;border:1px solid #30415a;padding:18px;border-radius:12px;margin:10px 0}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px}
-.tab{display:none}.tab.active{display:block}
+main{max-width:900px;margin:auto;padding:15px}
+button,.btn{background:#10d99a;color:#06251b;border:0;padding:11px;border-radius:8px;cursor:pointer;font-weight:bold;margin:3px}
+input,textarea{width:100%;padding:12px;margin:7px 0;background:#0b1729;color:white;border:1px solid #34445b;border-radius:8px}
+.card{background:#14243a;padding:15px;border-radius:12px;margin:10px 0}
+nav{padding:10px;display:flex;flex-wrap:wrap;gap:5px}
+.tab{display:none}.active{display:block}
 .hidden{display:none!important}
-#login{max-width:400px;margin:70px auto;padding:25px}
-#login h1{text-align:center}
+.chat{height:280px;overflow:auto;background:#0b1729;padding:10px;border-radius:8px}
+.msg{padding:8px;margin:5px;background:#1c2e47;border-radius:8px}
 small{color:#aab9ce}
-.gold{color:#ffc247}
-.modal{position:fixed;inset:0;background:#000d;display:flex;align-items:center;justify-content:center;padding:15px;z-index:10}
-.modal .card{width:100%;max-width:500px;max-height:90vh;overflow:auto}
-.chat-box{background:#0b1729;border:1px solid #34445b;border-radius:8px;height:350px;overflow-y:auto;padding:12px;margin-bottom:10px;display:flex;flex-direction:column;gap:8px}
-.chat-msg{background:#1c2e47;padding:8px 12px;border-radius:8px;max-width:85%;word-break:break-word}
-.chat-msg.me{background:#10d99a;color:#06251b;align-self:flex-end}
-.chat-input-container{display:flex;gap:8px;align-items:center}
-.chat-input-container input{margin:0}
-.chat-input-container button{white-space:nowrap}
-.gold{font-weight:bold}
-.muted{color:#aab9ce}
-.danger{background:#a83248;color:white}
-footer{text-align:center;padding:25px;color:#aab9ce}
 </style>
 </head>
 <body>
 
-<section id="login" class="card">
+<section id="login" class="card" style="max-width:400px;margin:50px auto;padding:20px">
 <h1>🐼 Panda Gamer</h1>
-<p style="text-align:center">ESCOLA • JOGOS • LIVROS</p>
-<h3 id="auth-title">Entrar</h3>
+<p>ESCOLA • JOGOS • LIVROS</p>
 <input id="email" type="email" placeholder="E-mail">
 <input id="password" type="password" placeholder="Senha (mínimo 6 caracteres)">
-<button onclick="auth()" id="auth-btn">Entrar</button>
-<button onclick="toggleRegister()" style="background:#263c55;color:white">Criar conta</button>
-<p class="muted" id="auth-message"></p>
+<input id="name" placeholder="Nome de jogador (para cadastro)">
+<button onclick="auth(false)">Entrar</button>
+<button onclick="auth(true)">Criar conta</button>
+<p id="status"></p>
 </section>
 
 <div id="app" class="hidden">
@@ -55,7 +42,7 @@ footer{text-align:center;padding:25px;color:#aab9ce}
 <h2>🐼 Panda Gamer School</h2>
 <small id="welcome"></small>
 </div>
-<div class="gold">🪙 <span id="coins">0</span> P-Coins</div>
+<div>🪙 <span id="coins">100</span> P-Coins</div>
 <button onclick="logout()">Sair</button>
 </header>
 
@@ -64,54 +51,38 @@ footer{text-align:center;padding:25px;color:#aab9ce}
 <button onclick="tab('books')">📚 Livros</button>
 <button onclick="tab('games')">🎮 Jogos</button>
 <button onclick="tab('chat')">💬 Chat</button>
-<button onclick="tab('shop')">🛍️ Loja</button>
 <button onclick="tab('ranking')">🏆 Ranking</button>
 <button onclick="tab('profile')">👤 Perfil</button>
-<button onclick="admin()">👑 Admin</button>
 </nav>
 
 <main>
 <section id="home" class="tab active">
 <div class="card">
 <h1>Bem-vindo ao Mundo Panda! 🐼</h1>
-<p>Leia, jogue, crie e ganhe recompensas!</p>
-<p>Você começa com 100 P-Coins. Divirta-se!</p>
+<p>Leia, jogue e conheça outros jogadores!</p>
 </div>
-<div class="grid">
-<div class="card">📚<h3>Biblioteca</h3><p>Crie suas próprias histórias.</p><button onclick="tab('books')">Acessar</button></div>
-<div class="card">🎮<h3>Arena Gamer</h3><p>Compartilhe seus jogos.</p><button onclick="tab('games')">Acessar</button></div>
-<div class="card">💬<h3>Chat Panda</h3><p>Converse com a galera.</p><button onclick="tab('chat')">Acessar</button></div>
-<div class="card">🪙<h3>Suas moedas</h3><p>Conquiste recompensas.</p><button onclick="tab('shop')">Ver loja</button></div>
-</div>
+<div class="card">📚 Biblioteca compartilhada</div>
+<div class="card">🎮 Arena Gamer</div>
+<div class="card">💬 Converse com outros jogadores</div>
 </section>
 
 <section id="books" class="tab">
-<h2>📚 Biblioteca Panda</h2>
+<h2>📚 Biblioteca</h2>
 <button onclick="newBook()">+ Criar livro</button>
-<div id="book-list" class="grid"></div>
+<div id="book-list"></div>
 </section>
 
 <section id="games" class="tab">
-<h2>🎮 Arena Gamer</h2>
+<h2>🎮 Jogos</h2>
 <button onclick="newGame()">+ Publicar jogo</button>
-<div id="game-list" class="grid"></div>
+<div id="game-list"></div>
 </section>
 
 <section id="chat" class="tab">
-<h2>💬 Chat da Galera Gamer</h2>
-<div class="card">
-<div id="chat-box" class="chat-box"></div>
-<div class="chat-input-container">
-<input id="chat-input" placeholder="Digite uma mensagem..." maxlength="300">
-<button onclick="sendChatMessage()">Enviar</button>
-</div>
-</div>
-</section>
-
-<section id="shop" class="tab">
-<h2>🛍️ Loja Panda</h2>
-<p>Troque suas P-Coins por itens especiais!</p>
-<div id="shop-list" class="grid"></div>
+<h2>💬 Chat Panda</h2>
+<div id="chat-box" class="chat"></div>
+<input id="chat-input" maxlength="300" placeholder="Digite sua mensagem...">
+<button onclick="sendMessage()">Enviar</button>
 </section>
 
 <section id="ranking" class="tab">
@@ -122,368 +93,182 @@ footer{text-align:center;padding:25px;color:#aab9ce}
 <section id="profile" class="tab">
 <h2>👤 Meu perfil</h2>
 <div class="card">
-<h3>🐼 <span id="profile-email"></span></h3>
-<p>Moedas: <span id="profile-coins"></span> 🪙</p>
-<p>Nível: <span id="level"></span></p>
-<h3>Minhas conquistas</h3>
-<p id="profile-purchases"></p>
+<p id="profile-name"></p>
+<p id="profile-email"></p>
+<p>🪙 <span id="profile-coins"></span> P-Coins</p>
 </div>
 </section>
 </main>
-<footer>🐼 Panda Gamer School • Aprender, jogar e criar!</footer>
-</div>
-
-<div id="modal" class="modal hidden">
-<div class="card">
-<h2 id="modal-title"></h2>
-<div id="modal-content"></div>
-<button onclick="closeModal()">Fechar</button>
-</div>
 </div>
 
 <script>
-const ADMIN_PASSWORD = "PandaAdmin2026";
+const URL="https://iwszwbthlkeichfaoebl.supabase.co";
+const KEY="sb_publishable_rMmofAnzZIc7UDzhw3vGsg_t0CgaC2C";
+const db=supabase.createClient(URL,KEY);
 
-let users = JSON.parse(localStorage.getItem("p_users") || "[]");
-let books = JSON.parse(localStorage.getItem("p_books") || "[]");
-let games = JSON.parse(localStorage.getItem("p_games") || "[]");
-let chatMessages = JSON.parse(localStorage.getItem("p_chat") || "[]");
-let user = null;
-let register = false;
-let reading = null;
+let user=null,profile=null,channel=null;
+const $=id=>document.getElementById(id);
 
-const items = [
-["Avatar Panda",50,"🎧"],
-["Mouse Gamer",100,"🖱️"],
-["Teclado RGB",300,"⌨️"],
-["Panda Pro",500,"👑"],
-["Panda Dourado",750,"🐼"]
-];
-
-function safe(value){
-return String(value ?? "").replace(/[&<>"']/g, c => ({
+function safe(s){
+return String(s??"").replace(/[&<>"']/g,c=>({
 "&":"&amp;","<":"&lt;",">":"&gt;",
 '"':"&quot;","'":"&#39;"
 }[c]));
 }
 
-function save(){
-localStorage.setItem("p_users",JSON.stringify(users));
-localStorage.setItem("p_books",JSON.stringify(books));
-localStorage.setItem("p_games",JSON.stringify(games));
-localStorage.setItem("p_chat",JSON.stringify(chatMessages));
-}
-
-function auth(){
-const email = document.getElementById("email").value.trim().toLowerCase();
-const password = document.getElementById("password").value;
-const message = document.getElementById("auth-message");
-
-if(!email || !email.includes("@") || password.length < 6){
-message.textContent = "Informe um e-mail válido e uma senha com pelo menos 6 caracteres.";
+async function auth(register){
+const email=$("email").value.trim();
+const password=$("password").value;
+const display_name=$("name").value.trim();
+if(!email||password.length<6){
+$("status").textContent="Informe e-mail e senha com 6 caracteres.";
 return;
 }
-
+$("status").textContent="Conectando...";
+let result;
 if(register){
-if(users.some(u => u.email === email)){
-message.textContent = "Este e-mail já está cadastrado!";
-return;
-}
-user = {email,password,coins:100,rewards:[],purchases:[]};
-users.push(user);
-save();
-alert("Conta criada! Você ganhou 100 P-Coins!");
+result=await db.auth.signUp({email,password,
+options:{data:{display_name:display_name||"Jogador Panda"}}});
 }else{
-user = users.find(u => u.email === email && u.password === password);
-if(!user){
-message.textContent = "E-mail ou senha incorretos.";
+result=await db.auth.signInWithPassword({email,password});
+}
+if(result.error){$("status").textContent=result.error.message;return;}
+if(register&&!result.data.session){
+$("status").textContent="Confira seu e-mail para confirmar o cadastro.";
 return;
 }
-}
-message.textContent = "";
-start();
+if(result.data.session)await start();
 }
 
-function toggleRegister(){
-register = !register;
-document.getElementById("auth-title").textContent = register ? "Criar conta" : "Entrar";
-document.getElementById("auth-btn").textContent = register ? "Cadastrar" : "Entrar";
-document.getElementById("auth-message").textContent = "";
+async function start(){
+const {data}=await db.auth.getUser();
+user=data.user;
+if(!user)return;
+const result=await db.from("profiles").select("*").eq("id",user.id).single();
+if(result.error){
+$("status").textContent="Erro no perfil: "+result.error.message;
+return;
+}
+profile=result.data;
+$("login").classList.add("hidden");
+$("app").classList.remove("hidden");
+$("welcome").textContent="Olá, "+(profile.display_name||user.email);
+$("coins").textContent=profile.coins;
+$("profile-name").textContent=profile.display_name;
+$("profile-email").textContent=user.email;
+$("profile-coins").textContent=profile.coins;
+await Promise.all([loadBooks(),loadGames(),loadChat(),loadRanking()]);
+connectChat();
 }
 
-function start(){
-document.getElementById("login").classList.add("hidden");
-document.getElementById("app").classList.remove("hidden");
-render();
-}
-
-function logout(){
-user = null;
-document.getElementById("app").classList.add("hidden");
-document.getElementById("login").classList.remove("hidden");
-document.getElementById("password").value = "";
+async function logout(){
+if(channel)await db.removeChannel(channel);
+await db.auth.signOut();
+user=null;profile=null;
+$("app").classList.add("hidden");
+$("login").classList.remove("hidden");
 }
 
 function tab(id){
-document.querySelectorAll(".tab").forEach(x => x.classList.remove("active"));
-document.getElementById(id).classList.add("active");
-if(id === "chat") renderChat();
+document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));
+$(id).classList.add("active");
 }
 
-function update(){
-document.getElementById("welcome").textContent = "Olá, " + user.email;
-document.getElementById("coins").textContent = user.coins;
-document.getElementById("profile-email").textContent = user.email;
-document.getElementById("profile-coins").textContent = user.coins;
-document.getElementById("level").textContent = Math.floor(user.coins / 200) + 1;
-document.getElementById("profile-purchases").textContent =
-user.purchases.length ? user.purchases.join(", ") : "Nenhuma compra ainda.";
-save();
+async function newBook(){
+const title=prompt("Título do livro:");
+if(!title)return;
+const content=prompt("Escreva sua história:");
+if(!content)return;
+const {error}=await db.from("books").insert({title,content,author_id:user.id});
+if(error)alert(error.message);else loadBooks();
 }
 
-function render(){
-update();
-renderBooks();
-renderGames();
-renderShop();
-renderRanking();
-renderChat();
+async function loadBooks(){
+const {data,error}=await db.from("books").select("id,title,content")
+.order("created_at",{ascending:false});
+if(error){console.error(error);return;}
+$("book-list").innerHTML=data.map(b=>`
+<div class="card"><h3>📘 ${safe(b.title)}</h3>
+<button onclick="readBook('${b.id}')">Ler livro</button>
+<div id="book-${b.id}" class="hidden"><p>${safe(b.content)}</p></div>
+</div>`).join("")||"Nenhum livro publicado.";
 }
 
-function show(title,content){
-document.getElementById("modal-title").textContent = title;
-document.getElementById("modal-content").innerHTML = content;
-document.getElementById("modal").classList.remove("hidden");
-}
+function readBook(id){$("book-"+id).classList.toggle("hidden");}
 
-function closeModal(){
-document.getElementById("modal").classList.add("hidden");
-}
-
-function newBook(){
-show("Criar livro",`
-<label>Título do livro</label>
-<input id="book-title" maxlength="80" placeholder="Digite o título">
-<label>Sua história</label>
-<textarea id="book-content" rows="6" maxlength="10000" placeholder="Escreva sua história..."></textarea>
-<button onclick="saveBook()">Publicar livro</button>
-`);
-}
-
-function saveBook(){
-const title = document.getElementById("book-title").value.trim();
-const content = document.getElementById("book-content").value.trim();
-if(!title || !content) return alert("Preencha o título e a história!");
-books.push({
-id:Date.now(),
-title,content,
-author:user.email
-});
-save();
-renderBooks();
-closeModal();
-alert("Livro publicado!");
-}
-
-function renderBooks(){
-document.getElementById("book-list").innerHTML =
-books.map(b => `
-<div class="card">
-📘<h3>${safe(b.title)}</h3>
-<small>Autor: ${safe(b.author)}</small>
-<p><button onclick="readBook(${Number(b.id)})">Ler livro</button></p>
-</div>
-`).join("") || "<p>Nenhum livro publicado ainda.</p>";
-}
-
-function readBook(id){
-const b = books.find(x => x.id === id);
-if(!b) return;
-reading = id;
-const earned = (user.rewards || []).includes("book" + id);
-show(b.title,`
-<p>Autor: ${safe(b.author)}</p>
-<p style="white-space:pre-wrap">${safe(b.content)}</p>
-<button ${earned ? "disabled" : ""} onclick="rewardBook()">
-${earned ? "Recompensa recebida" : "Concluir leitura (+10 moedas)"}
-</button>
-`);
-}
-
-function rewardBook(){
-const key = "book" + reading;
-user.rewards = user.rewards || [];
-if(user.rewards.includes(key)) return;
-user.rewards.push(key);
-user.coins += 10;
-render();
-readBook(reading);
-}
-
-function newGame(){
-show("Publicar jogo",`
-<label>Nome do jogo</label>
-<input id="game-title" maxlength="80" placeholder="Nome do jogo">
-<label>Link do jogo</label>
-<input id="game-url" placeholder="https://exemplo.com">
-<button onclick="saveGame()">Publicar jogo</button>
-`);
-}
-
-function saveGame(){
-const title = document.getElementById("game-title").value.trim();
-const url = document.getElementById("game-url").value.trim();
-if(!title || !url) return alert("Preencha todos os campos!");
+async function newGame(){
+const title=prompt("Nome do jogo:");
+if(!title)return;
+const url=prompt("Link do jogo:");
+if(!url)return;
 try{
-const parsed = new URL(url);
-if(!["http:","https:"].includes(parsed.protocol)) throw Error();
-games.push({
-id:Date.now(),
-title,
-url:parsed.href,
-author:user.email
-});
-save();
-renderGames();
-closeModal();
-alert("Jogo publicado!");
-}catch(e){
-alert("Link inválido! Use um endereço HTTP ou HTTPS.");
-}
+const parsed=new URL(url);
+if(!["https:","http:"].includes(parsed.protocol))throw Error();
+const {error}=await db.from("games").insert({title,url:parsed.href,author_id:user.id});
+if(error)alert(error.message);else loadGames();
+}catch(e){alert("Link inválido.");}
 }
 
-function renderGames(){
-document.getElementById("game-list").innerHTML =
-games.map(g => `
-<div class="card">
-🎮<h3>${safe(g.title)}</h3>
-<small>Publicado por: ${safe(g.author)}</small>
-<p><a class="btn" href="${safe(g.url)}" target="_blank" rel="noopener noreferrer">Jogar agora</a></p>
-</div>
-`).join("") || "<p>Nenhum jogo publicado ainda.</p>";
+async function loadGames(){
+const {data,error}=await db.from("games").select("id,title,url")
+.order("created_at",{ascending:false});
+if(error){console.error(error);return;}
+$("game-list").innerHTML=data.map(g=>`
+<div class="card"><h3>🎮 ${safe(g.title)}</h3>
+<a class="btn" href="${safe(g.url)}" target="_blank" rel="noopener">Jogar</a>
+</div>`).join("")||"Nenhum jogo publicado.";
 }
 
-function renderShop(){
-document.getElementById("shop-list").innerHTML =
-items.map((item,index) => `
-<div class="card" style="text-align:center">
-<div style="font-size:38px">${item[2]}</div>
-<h3>${safe(item[0])}</h3>
-<p class="gold">🪙 ${item[1]} P-Coins</p>
-<button onclick="buyShopItem(${index})">Comprar</button>
-</div>
-`).join("");
+async function loadChat(){
+const {data,error}=await db.from("chat_messages")
+.select("id,message,user_id,created_at")
+.order("created_at",{ascending:true}).limit(100);
+if(error){console.error(error);return;}
+renderChat(data);
 }
 
-function buyShopItem(index){
-const item = items[index];
-if(!item) return;
-user.purchases = user.purchases || [];
-if(user.purchases.includes(item[0])){
-return alert("Você já possui este item!");
-}
-if(user.coins < item[1]){
-return alert("Você não tem moedas suficientes!");
-}
-if(!confirm("Comprar " + item[0] + " por " + item[1] + " P-Coins?")) return;
-user.coins -= item[1];
-user.purchases.push(item[0]);
-render();
-alert("Você comprou " + item[0] + " com sucesso!");
+function renderChat(messages){
+$("chat-box").innerHTML=messages.map(m=>`
+<div class="msg"><small>${m.user_id===user.id?"Você":"Jogador"}</small>
+<p>${safe(m.message)}</p></div>`).join("");
+$("chat-box").scrollTop=$("chat-box").scrollHeight;
 }
 
-function renderRanking(){
-const sorted = [...users].sort((a,b) => b.coins - a.coins);
-document.getElementById("ranking-list").innerHTML =
-"<h3>🏆 Classificação Geral</h3>" +
-sorted.map((u,i) => `
-<p>${i+1}º - 👤 ${safe(u.email)}
-<span class="gold"> | 🪙 ${Number(u.coins)||0} P-Coins</span></p>
-`).join("") || "Nenhum aluno cadastrado.";
+async function sendMessage(){
+const message=$("chat-input").value.trim();
+if(!message)return;
+const {error}=await db.from("chat_messages").insert({user_id:user.id,message});
+if(error)alert(error.message);
+else $("chat-input").value="";
 }
 
-function renderChat(){
-const chatBox = document.getElementById("chat-box");
-if(!chatBox) return;
-chatBox.innerHTML = chatMessages.map(m => {
-const isMe = m.sender === user.email;
-return `
-<div class="chat-msg ${isMe ? "me" : ""}">
-<small style="display:block;font-size:10px">${safe(m.sender)}</small>
-<span>${safe(m.text)}</span>
-</div>
-`;
-}).join("");
-chatBox.scrollTop = chatBox.scrollHeight;
+function connectChat(){
+if(channel)db.removeChannel(channel);
+channel=db.channel("panda-chat")
+.on("postgres_changes",{event:"INSERT",schema:"public",table:"chat_messages"},
+()=>loadChat()).subscribe();
 }
 
-function sendChatMessage(){
-const input = document.getElementById("chat-input");
-const message = input.value.trim();
-if(!message) return;
-chatMessages.push({
-sender:user.email,
-text:message,
-time:Date.now()
-});
-chatMessages = chatMessages.slice(-300);
-input.value = "";
-save();
-renderChat();
-}
-
-document.getElementById("chat-input").addEventListener("keydown",e => {
-if(e.key === "Enter") sendChatMessage();
+$("chat-input").addEventListener("keydown",e=>{
+if(e.key==="Enter")sendMessage();
 });
 
-function admin(){
-const password = prompt("Digite a senha do administrador:");
-if(password !== ADMIN_PASSWORD) return alert("Senha incorreta!");
+async function loadRanking(){
+const {data,error}=await db.from("profiles")
+.select("display_name,coins").order("coins",{ascending:false}).limit(50);
+if(error){console.error(error);return;}
+$("ranking-list").innerHTML=data.map((p,i)=>`
+<p>${i+1}º 🐼 ${safe(p.display_name)} — 🪙 ${Number(p.coins)||0}</p>`).join("");
+}
 
-const action = prompt(
-"PAINEL ADMINISTRATIVO\n\n1 - Dar moedas\n2 - Ver alunos\n3 - Excluir livro\n4 - Excluir jogo"
-);
+db.auth.onAuthStateChange((event,session)=>{
+if(session&&!user)setTimeout(()=>start(),0);
+});
 
-if(action === "1"){
-const email = prompt("E-mail exato do aluno:");
-if(!email) return;
-const target = users.find(u => u.email === email.trim().toLowerCase());
-if(!target) return alert("Aluno não encontrado!");
-
-const amount = Number(prompt("Quantidade de moedas:"));
-if(!Number.isInteger(amount) || amount <= 0 || amount > 100000){
-return alert("Quantidade inválida!");
-}
-target.coins += amount;
-if(user.email === target.email) user.coins = target.coins;
-save();
-render();
-alert("Moedas adicionadas!");
-}
-else if(action === "2"){
-alert(users.map(u => u.email + " - " + u.coins + " moedas").join("\n") || "Nenhum aluno.");
-}
-else if(action === "3"){
-const id = Number(prompt("ID do livro que deseja excluir:\n" +
-books.map(b => b.id + " - " + b.title).join("\n")));
-if(!books.some(b => b.id === id)) return alert("Livro não encontrado!");
-books = books.filter(b => b.id !== id);
-save();
-renderBooks();
-alert("Livro removido!");
-}
-else if(action === "4"){
-const id = Number(prompt("ID do jogo que deseja excluir:\n" +
-games.map(g => g.id + " - " + g.title).join("\n")));
-if(!games.some(g => g.id === id)) return alert("Jogo não encontrado!");
-games = games.filter(g => g.id !== id);
-save();
-renderGames();
-alert("Jogo removido!");
-}
-}
+(async()=>{
+const {data}=await db.auth.getSession();
+if(data.session)await start();
+})();
 </script>
 </body>
 </html>
-
-
