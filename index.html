@@ -1,274 +1,932 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Panda Gamer School</title>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<style>
-*{box-sizing:border-box}
-body{margin:0;background:#091323;color:white;font-family:Arial}
-header{background:#111f33;padding:16px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px}
-h1,h2{color:#10d99a}
-main{max-width:900px;margin:auto;padding:15px}
-button,.btn{background:#10d99a;color:#06251b;border:0;padding:11px;border-radius:8px;cursor:pointer;font-weight:bold;margin:3px}
-input,textarea{width:100%;padding:12px;margin:7px 0;background:#0b1729;color:white;border:1px solid #34445b;border-radius:8px}
-.card{background:#14243a;padding:15px;border-radius:12px;margin:10px 0}
-nav{padding:10px;display:flex;flex-wrap:wrap;gap:5px}
-.tab{display:none}.active{display:block}
-.hidden{display:none!important}
-.chat{height:280px;overflow:auto;background:#0b1729;padding:10px;border-radius:8px}
-.msg{padding:8px;margin:5px;background:#1c2e47;border-radius:8px}
-small{color:#aab9ce}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0f172a">
+  <meta name="description" content="PandaVerso - Jogos, livros e comunidade.">
+  <title>PandaVerso - Jogos, Livros & Comunidade</title>
+
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card: #1e293b;
+      --primary: #10b981;
+      --accent: #8b5cf6;
+      --text: #f8fafc;
+      --muted: #94a3b8;
+      --border: #334155;
+      --danger: #ef4444;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Arial, sans-serif;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      background: var(--card);
+      padding: 15px 22px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 15px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .logo {
+      color: var(--primary);
+      font-size: 1.6rem;
+      font-weight: bold;
+    }
+
+    nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+    }
+
+    nav button {
+      background: transparent;
+      color: var(--text);
+      border: none;
+      padding: 10px 12px;
+      border-radius: 7px;
+      cursor: pointer;
+      font-size: .9rem;
+    }
+
+    nav button:hover,
+    nav button.active {
+      background: var(--primary);
+      color: #000;
+      font-weight: bold;
+    }
+
+    .user-bar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      padding: 9px 13px;
+      border-radius: 20px;
+      flex-wrap: wrap;
+    }
+
+    #userNameDisplay {
+      cursor: pointer;
+    }
+
+    .badge {
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: .72rem;
+      font-weight: bold;
+      text-transform: uppercase;
+    }
+
+    .badge-bronze { background: #cd7f32; color: white; }
+    .badge-prata { background: #c0c0c0; color: black; }
+    .badge-ouro { background: #ffd700; color: black; }
+    .badge-pro { background: var(--accent); color: white; }
+
+    main {
+      width: 100%;
+      max-width: 1150px;
+      margin: auto;
+      padding: 25px;
+      flex: 1;
+    }
+
+    .tab-content { display: none; }
+
+    .tab-content.active {
+      display: block;
+      animation: fadeIn .2s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+      gap: 18px;
+      margin-top: 20px;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      padding: 20px;
+      border-radius: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .card h3 { color: var(--primary); }
+
+    .card p {
+      color: var(--muted);
+      font-size: .92rem;
+      line-height: 1.5;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+    }
+
+    .tag {
+      display: inline-block;
+      width: fit-content;
+      padding: 4px 9px;
+      border-radius: 5px;
+      background: var(--border);
+      font-size: .75rem;
+    }
+
+    label {
+      display: block;
+      margin-top: 8px;
+      font-weight: 600;
+    }
+
+    input, textarea, select {
+      width: 100%;
+      padding: 12px;
+      margin: 8px 0;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--bg);
+      color: white;
+      font-size: 1rem;
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 120px;
+    }
+
+    button:focus-visible,
+    input:focus-visible,
+    textarea:focus-visible,
+    select:focus-visible {
+      outline: 2px solid var(--primary);
+      outline-offset: 3px;
+    }
+
+    .btn {
+      background: var(--primary);
+      color: #001b12;
+      border: none;
+      padding: 11px 15px;
+      border-radius: 8px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: opacity .2s;
+    }
+
+    .btn:hover { opacity: .85; }
+
+    .btn-accent {
+      background: var(--accent);
+      color: white;
+    }
+
+    .btn-danger {
+      background: var(--danger);
+      color: white;
+    }
+
+    .btn:disabled {
+      opacity: .45;
+      cursor: not-allowed;
+    }
+
+    .card-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: auto;
+    }
+
+    .chat-box {
+      height: 460px;
+      display: flex;
+      flex-direction: column;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      margin-top: 15px;
+    }
+
+    .chat-header {
+      background: #075e54;
+      padding: 15px;
+      font-weight: bold;
+    }
+
+    .chat-messages {
+      flex: 1;
+      padding: 15px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      background: #0b141a;
+    }
+
+    .msg {
+      max-width: 85%;
+      padding: 11px 14px;
+      border-radius: 10px;
+      overflow-wrap: anywhere;
+      white-space: pre-wrap;
+    }
+
+    .msg.me {
+      background: #005c4b;
+      align-self: flex-end;
+    }
+
+    .msg.other {
+      background: #202c33;
+      align-self: flex-start;
+    }
+
+    .msg small {
+      display: block;
+      color: #a7f3d0;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+
+    .chat-input {
+      display: flex;
+      gap: 8px;
+      padding: 10px;
+      background: #202c33;
+    }
+
+    .chat-input input { margin: 0; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+      background: var(--card);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    th, td {
+      padding: 12px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+
+    th {
+      background: var(--card);
+      color: var(--primary);
+    }
+
+    .table-wrap { overflow-x: auto; }
+
+    .modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.85);
+      justify-content: center;
+      align-items: center;
+      padding: 18px;
+      z-index: 100;
+    }
+
+    .modal-box {
+      background: var(--card);
+      padding: 25px;
+      border-radius: 12px;
+      width: 100%;
+      max-width: 700px;
+      max-height: 85vh;
+      overflow-y: auto;
+      border: 1px solid var(--primary);
+    }
+
+    .modal-box h2 {
+      color: var(--primary);
+      margin: 12px 0;
+    }
+
+    #modalContent {
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      line-height: 1.6;
+      margin: 18px 0;
+      color: var(--text);
+    }
+
+    footer {
+      text-align: center;
+      color: var(--muted);
+      padding: 20px;
+      border-top: 1px solid var(--border);
+      font-size: .85rem;
+    }
+
+    .notice {
+      color: var(--muted);
+      font-size: .85rem;
+      line-height: 1.5;
+      margin-top: 12px;
+    }
+
+    .empty {
+      color: var(--muted);
+      padding: 20px;
+      text-align: center;
+    }
+
+    @media (max-width: 700px) {
+      header { justify-content: center; }
+      nav { justify-content: center; }
+      main { padding: 17px; }
+      .user-bar { justify-content: center; }
+      .chat-input { flex-wrap: wrap; }
+      .chat-input button { width: 100%; }
+      th, td { padding: 9px; font-size: .85rem; }
+    }
+  </style>
 </head>
+
 <body>
 
-<section id="login" class="card" style="max-width:400px;margin:50px auto;padding:20px">
-<h1>🐼 Panda Gamer</h1>
-<p>ESCOLA • JOGOS • LIVROS</p>
-<input id="email" type="email" placeholder="E-mail">
-<input id="password" type="password" placeholder="Senha (mínimo 6 caracteres)">
-<input id="name" placeholder="Nome de jogador (para cadastro)">
-<button onclick="auth(false)">Entrar</button>
-<button onclick="auth(true)">Criar conta</button>
-<p id="status"></p>
-</section>
-
-<div id="app" class="hidden">
 <header>
-<div>
-<h2>🐼 Panda Gamer School</h2>
-<small id="welcome"></small>
-</div>
-<div>🪙 <span id="coins">100</span> P-Coins</div>
-<button onclick="logout()">Sair</button>
+  <div class="logo">🐼 PandaVerso</div>
+
+  <nav aria-label="Navegação principal">
+    <button class="active" onclick="openTab('explorar', this)">Explorar</button>
+    <button onclick="openTab('publicar', this)">+ Publicar</button>
+    <button onclick="openTab('banco', this)">Banco & Níveis</button>
+    <button onclick="openTab('chat', this)">PandaZap</button>
+    <button onclick="openTab('ranking', this)">Ranking</button>
+    <button onclick="openTab('adm', this)">Aba ADM</button>
+  </nav>
+
+  <div class="user-bar">
+    <span id="userNameDisplay" onclick="changeNick()" title="Clique para mudar seu nick">Visitante ✏️</span>
+    <span id="userBadge" class="badge badge-bronze">Bronze</span>
+    <span>🪙 <strong id="userCoins">100</strong></span>
+  </div>
 </header>
 
-<nav>
-<button onclick="tab('home')">🏠 Início</button>
-<button onclick="tab('books')">📚 Livros</button>
-<button onclick="tab('games')">🎮 Jogos</button>
-<button onclick="tab('chat')">💬 Chat</button>
-<button onclick="tab('ranking')">🏆 Ranking</button>
-<button onclick="tab('profile')">👤 Perfil</button>
-</nav>
-
 <main>
-<section id="home" class="tab active">
-<div class="card">
-<h1>Bem-vindo ao Mundo Panda! 🐼</h1>
-<p>Leia, jogue e conheça outros jogadores!</p>
-</div>
-<div class="card">📚 Biblioteca compartilhada</div>
-<div class="card">🎮 Arena Gamer</div>
-<div class="card">💬 Converse com outros jogadores</div>
-</section>
 
-<section id="books" class="tab">
-<h2>📚 Biblioteca</h2>
-<button onclick="newBook()">+ Criar livro</button>
-<div id="book-list"></div>
-</section>
+  <section id="explorar" class="tab-content active">
+    <h2>🎮 Jogos e 📚 Livros da Comunidade</h2>
+    <p class="notice">Explore as criações da comunidade e publique suas próprias obras!</p>
+    <div class="grid" id="feedGrid"></div>
+  </section>
 
-<section id="games" class="tab">
-<h2>🎮 Jogos</h2>
-<button onclick="newGame()">+ Publicar jogo</button>
-<div id="game-list"></div>
-</section>
+  <section id="publicar" class="tab-content">
+    <h2>🚀 Publicar na Comunidade (+50 PandaCoins)</h2>
 
-<section id="chat" class="tab">
-<h2>💬 Chat Panda</h2>
-<div id="chat-box" class="chat"></div>
-<input id="chat-input" maxlength="300" placeholder="Digite sua mensagem...">
-<button onclick="sendMessage()">Enviar</button>
-</section>
+    <div class="card" style="max-width:650px;margin-top:20px">
+      <label for="postType">Tipo de publicação</label>
+      <select id="postType">
+        <option value="🎮 Jogo">🎮 Jogo</option>
+        <option value="✍️ Livro Criado">✍️ Livro Original</option>
+        <option value="📚 Livro Existente">📚 Livro Existente</option>
+      </select>
 
-<section id="ranking" class="tab">
-<h2>🏆 Ranking</h2>
-<div id="ranking-list" class="card"></div>
-</section>
+      <label for="postTitle">Título da obra</label>
+      <input id="postTitle" maxlength="100" placeholder="Ex: A Lenda do Panda">
 
-<section id="profile" class="tab">
-<h2>👤 Meu perfil</h2>
-<div class="card">
-<p id="profile-name"></p>
-<p id="profile-email"></p>
-<p>🪙 <span id="profile-coins"></span> P-Coins</p>
-</div>
-</section>
+      <label for="postDesc">História, descrição ou link</label>
+      <textarea id="postDesc" maxlength="20000" placeholder="Escreva sua história ou cole o link do jogo..."></textarea>
+
+      <button class="btn" onclick="createPost()">Publicar (+50 🪙)</button>
+    </div>
+  </section>
+
+  <section id="banco" class="tab-content">
+    <h2>🏦 PandaBank & Evolução de Conta</h2>
+
+    <div class="grid">
+      <div class="card">
+        <h3>💰 Sua Conta Bancária</h3>
+        <p>Ganhe PandaCoins publicando obras, curtindo publicações e resgatando bônus.</p>
+        <h1 style="font-size:2.5rem">🪙 <span id="bankCoins">100</span></h1>
+        <p>Patente atual: <strong id="bankLevel">Bronze</strong></p>
+        <button class="btn" onclick="dailyBonus()">🎁 Bônus diário (+30 🪙)</button>
+        <p class="notice" id="bonusStatus"></p>
+      </div>
+
+      <div class="card">
+        <h3>⭐ Evoluir Patente</h3>
+        <p>Suba de nível para ganhar destaque no PandaVerso.</p>
+        <button class="btn" style="background:#c0c0c0;margin-bottom:5px" onclick="upgradeRank('Prata',150)">Prata — 150 🪙</button>
+        <button class="btn" style="background:#ffd700;margin-bottom:5px" onclick="upgradeRank('Ouro',300)">Ouro — 300 🪙</button>
+        <button class="btn btn-accent" onclick="upgradeRank('Pro',500)">Pro — 500 🪙</button>
+      </div>
+    </div>
+  </section>
+
+  <section id="chat" class="tab-content">
+    <h2>💬 PandaZap - Chat da Comunidade</h2>
+    <div class="chat-box">
+      <div class="chat-header">🐼 Comunidade PandaVerso</div>
+      <div class="chat-messages" id="chatMessages" aria-live="polite"></div>
+      <div class="chat-input">
+        <input id="chatInput" maxlength="500" placeholder="Digite sua mensagem..." onkeydown="if(event.key==='Enter') sendMsg()">
+        <button class="btn" onclick="sendMsg()">Enviar</button>
+      </div>
+    </div>
+    <p class="notice">Este chat é local: as mensagens aparecem somente neste navegador.</p>
+  </section>
+
+  <section id="ranking" class="tab-content">
+    <h2>🏆 Ranking dos Criadores</h2>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Posição</th>
+            <th>Criador</th>
+            <th>Patente</th>
+            <th>Saldo</th>
+          </tr>
+        </thead>
+        <tbody id="rankingTable"></tbody>
+      </table>
+    </div>
+    <p class="notice">O ranking é demonstrativo e usa os dados locais deste navegador.</p>
+  </section>
+
+  <section id="adm" class="tab-content">
+    <h2>🛡️ Painel Administrativo</h2>
+
+    <div class="card" style="max-width:550px;margin-top:15px">
+      <p>Área administrativa local do PandaVerso.</p>
+      <label for="admPass">Senha ADM</label>
+      <input type="password" id="admPass" placeholder="Digite a senha administrativa">
+      <button class="btn" onclick="unlockAdm()">Desbloquear painel</button>
+
+      <div id="admControls" style="display:none;margin-top:15px">
+        <h3>Ferramentas administrativas</h3>
+        <button class="btn" style="width:100%;margin:8px 0" onclick="addCoins(500)">+ Injetar 500 PandaCoins</button>
+        <button class="btn btn-accent" style="width:100%;margin:8px 0" onclick="upgradeRank('Pro',0)">Ativar patente PRO</button>
+        <button class="btn btn-danger" style="width:100%;margin:8px 0" onclick="resetSite()">Resetar dados locais</button>
+      </div>
+
+      <p class="notice">
+        Atenção: a autenticação deste painel é apenas demonstrativa.
+        Como a senha fica no JavaScript público, não é possível proteger
+        um painel administrativo real desta maneira. Não use para administrar
+        dados ou dinheiro reais.
+      </p>
+    </div>
+  </section>
+
 </main>
+
+<div class="modal" id="readerModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+  <div class="modal-box">
+    <span class="tag" id="modalType"></span>
+    <h2 id="modalTitle"></h2>
+    <p id="modalAuthor" class="notice"></p>
+    <div id="modalContent"></div>
+    <button class="btn" onclick="closeModal()">Fechar</button>
+  </div>
 </div>
+
+<footer>
+  🐼 PandaVerso © 2026 — Jogos, Livros e Comunidade
+</footer>
 
 <script>
-const URL="https://iwszwbthlkeichfaoebl.supabase.co";
-const KEY="sb_publishable_rMmofAnzZIc7UDzhw3vGsg_t0CgaC2C";
-const db=supabase.createClient(URL,KEY);
+'use strict';
 
-let user=null,profile=null,channel=null;
-const $=id=>document.getElementById(id);
+const STORAGE_KEY = 'pandaverso_fast_db';
 
-function safe(s){
-return String(s??"").replace(/[&<>"']/g,c=>({
-"&":"&amp;","<":"&lt;",">":"&gt;",
-'"':"&quot;","'":"&#39;"
-}[c]));
-}
+const defaultData = {
+  user: {
+    name: 'Panda_' + Math.floor(Math.random() * 999),
+    coins: 100,
+    level: 'Bronze',
+    lastBonus: ''
+  },
 
-async function auth(register){
-const email=$("email").value.trim();
-const password=$("password").value;
-const display_name=$("name").value.trim();
-if(!email||password.length<6){
-$("status").textContent="Informe e-mail e senha com 6 caracteres.";
-return;
-}
-$("status").textContent="Conectando...";
-let result;
-if(register){
-result=await db.auth.signUp({email,password,
-options:{data:{display_name:display_name||"Jogador Panda"}}});
-}else{
-result=await db.auth.signInWithPassword({email,password});
-}
-if(result.error){$("status").textContent=result.error.message;return;}
-if(register&&!result.data.session){
-$("status").textContent="Confira seu e-mail para confirmar o cadastro.";
-return;
-}
-if(result.data.session)await start();
-}
+  posts: [
+    {
+      id: 1,
+      type: '🎮 Jogo',
+      title: 'Panda Adventure 2D',
+      author: 'LucasDev',
+      desc: 'Um jogo de plataforma clássico onde você explora florestas de bambu.',
+      likes: 0
+    },
+    {
+      id: 2,
+      type: '✍️ Livro Criado',
+      title: 'O Código do Multiverso',
+      author: 'AnaWriter',
+      desc: 'Capítulo 1: Naquela noite, as estrelas começaram a piscar em código binário...',
+      likes: 0
+    }
+  ],
 
-async function start(){
-const {data}=await db.auth.getUser();
-user=data.user;
-if(!user)return;
-const result=await db.from("profiles").select("*").eq("id",user.id).single();
-if(result.error){
-$("status").textContent="Erro no perfil: "+result.error.message;
-return;
-}
-profile=result.data;
-$("login").classList.add("hidden");
-$("app").classList.remove("hidden");
-$("welcome").textContent="Olá, "+(profile.display_name||user.email);
-$("coins").textContent=profile.coins;
-$("profile-name").textContent=profile.display_name;
-$("profile-email").textContent=user.email;
-$("profile-coins").textContent=profile.coins;
-await Promise.all([loadBooks(),loadGames(),loadChat(),loadRanking()]);
-connectChat();
-}
+  messages: [
+    {
+      sender: 'Sistema Panda',
+      level: 'Pro',
+      text: 'Bem-vindo ao PandaZap! Converse com a comunidade.',
+      isMe: false
+    }
+  ],
 
-async function logout(){
-if(channel)await db.removeChannel(channel);
-await db.auth.signOut();
-user=null;profile=null;
-$("app").classList.add("hidden");
-$("login").classList.remove("hidden");
-}
+  members: [
+    { name: 'LucasDev', level: 'Pro', coins: 650 },
+    { name: 'AnaWriter', level: 'Ouro', coins: 390 },
+    { name: 'GamerBR', level: 'Prata', coins: 180 }
+  ],
 
-function tab(id){
-document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));
-$(id).classList.add("active");
-}
+  likedPosts: []
+};
 
-async function newBook(){
-const title=prompt("Título do livro:");
-if(!title)return;
-const content=prompt("Escreva sua história:");
-if(!content)return;
-const {error}=await db.from("books").insert({title,content,author_id:user.id});
-if(error)alert(error.message);else loadBooks();
+function loadData() {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (!saved) return structuredClone(defaultData);
+
+    const data = JSON.parse(saved);
+
+    if (!data.user || !Array.isArray(data.posts) ||
+        !Array.isArray(data.messages) ||
+        !Array.isArray(data.members)) {
+      return structuredClone(defaultData);
+    }
+
+    return {
+      ...defaultData,
+      ...data,
+      user: { ...defaultData.user, ...data.user },
+      likedPosts: Array.isArray(data.likedPosts) ? data.likedPosts : []
+    };
+  } catch (error) {
+    console.error('Erro ao carregar dados:', error);
+    return structuredClone(defaultData);
+  }
 }
 
-async function loadBooks(){
-const {data,error}=await db.from("books").select("id,title,content")
-.order("created_at",{ascending:false});
-if(error){console.error(error);return;}
-$("book-list").innerHTML=data.map(b=>`
-<div class="card"><h3>📘 ${safe(b.title)}</h3>
-<button onclick="readBook('${b.id}')">Ler livro</button>
-<div id="book-${b.id}" class="hidden"><p>${safe(b.content)}</p></div>
-</div>`).join("")||"Nenhum livro publicado.";
+let db = loadData();
+
+function save() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(db));
+    renderAll();
+  } catch (error) {
+    alert('Não foi possível salvar os dados. O armazenamento pode estar cheio.');
+    console.error(error);
+  }
 }
 
-function readBook(id){$("book-"+id).classList.toggle("hidden");}
+function openTab(tabId, btn) {
+  document.querySelectorAll('.tab-content').forEach(section => {
+    section.classList.remove('active');
+  });
 
-async function newGame(){
-const title=prompt("Nome do jogo:");
-if(!title)return;
-const url=prompt("Link do jogo:");
-if(!url)return;
-try{
-const parsed=new URL(url);
-if(!["https:","http:"].includes(parsed.protocol))throw Error();
-const {error}=await db.from("games").insert({title,url:parsed.href,author_id:user.id});
-if(error)alert(error.message);else loadGames();
-}catch(e){alert("Link inválido.");}
+  document.querySelectorAll('nav button').forEach(button => {
+    button.classList.remove('active');
+  });
+
+  document.getElementById(tabId).classList.add('active');
+  btn.classList.add('active');
 }
 
-async function loadGames(){
-const {data,error}=await db.from("games").select("id,title,url")
-.order("created_at",{ascending:false});
-if(error){console.error(error);return;}
-$("game-list").innerHTML=data.map(g=>`
-<div class="card"><h3>🎮 ${safe(g.title)}</h3>
-<a class="btn" href="${safe(g.url)}" target="_blank" rel="noopener">Jogar</a>
-</div>`).join("")||"Nenhum jogo publicado.";
+function changeNick() {
+  const name = prompt('Digite seu nome de criador:', db.user.name);
+
+  if (!name || !name.trim()) return;
+
+  db.user.name = name.trim().substring(0, 30);
+  save();
 }
 
-async function loadChat(){
-const {data,error}=await db.from("chat_messages")
-.select("id,message,user_id,created_at")
-.order("created_at",{ascending:true}).limit(100);
-if(error){console.error(error);return;}
-renderChat(data);
+function makeElement(tag, text, className) {
+  const element = document.createElement(tag);
+  if (text !== undefined) element.textContent = text;
+  if (className) element.className = className;
+  return element;
 }
 
-function renderChat(messages){
-$("chat-box").innerHTML=messages.map(m=>`
-<div class="msg"><small>${m.user_id===user.id?"Você":"Jogador"}</small>
-<p>${safe(m.message)}</p></div>`).join("");
-$("chat-box").scrollTop=$("chat-box").scrollHeight;
+function renderFeed() {
+  const feed = document.getElementById('feedGrid');
+  feed.replaceChildren();
+
+  if (db.posts.length === 0) {
+    feed.appendChild(makeElement('p', 'Ainda não existem publicações.', 'empty'));
+    return;
+  }
+
+  [...db.posts].reverse().forEach(post => {
+    const card = makeElement('article', undefined, 'card');
+    const tag = makeElement('span', post.type, 'tag');
+    const title = makeElement('h3', post.title);
+    const author = makeElement('p', 'Criador: ' + post.author);
+    const preview = post.desc.length > 120
+      ? post.desc.substring(0, 120) + '...'
+      : post.desc;
+
+    const description = makeElement('p', preview);
+    const likes = makeElement('p', '👍 ' + (post.likes || 0) + ' curtidas');
+    const actions = makeElement('div', undefined, 'card-actions');
+
+    const openButton = makeElement('button', 'Abrir / Ler', 'btn');
+    openButton.onclick = () => openReader(post.id);
+
+    const liked = db.likedPosts.includes(post.id);
+    const likeButton = makeElement(
+      'button',
+      liked ? 'Curtido ✓' : '👍 Curtir (+5 🪙)',
+      'btn btn-accent'
+    );
+    likeButton.disabled = liked;
+    likeButton.onclick = () => likePost(post.id);
+
+    actions.append(openButton, likeButton);
+    card.append(tag, title, author, description, likes, actions);
+    feed.appendChild(card);
+  });
 }
 
-async function sendMessage(){
-const message=$("chat-input").value.trim();
-if(!message)return;
-const {error}=await db.from("chat_messages").insert({user_id:user.id,message});
-if(error)alert(error.message);
-else $("chat-input").value="";
+function renderChat() {
+  const chat = document.getElementById('chatMessages');
+  chat.replaceChildren();
+
+  db.messages.forEach(message => {
+    const bubble = makeElement(
+      'div',
+      undefined,
+      message.isMe ? 'msg me' : 'msg other'
+    );
+
+    const sender = makeElement(
+      'small',
+      message.sender + ' [' + message.level + ']'
+    );
+
+    const content = makeElement('div', message.text);
+    bubble.append(sender, content);
+    chat.appendChild(bubble);
+  });
+
+  chat.scrollTop = chat.scrollHeight;
 }
 
-function connectChat(){
-if(channel)db.removeChannel(channel);
-channel=db.channel("panda-chat")
-.on("postgres_changes",{event:"INSERT",schema:"public",table:"chat_messages"},
-()=>loadChat()).subscribe();
+function renderRanking() {
+  const tbody = document.getElementById('rankingTable');
+  tbody.replaceChildren();
+
+  const ranking = [...db.members, db.user]
+    .sort((a, b) => b.coins - a.coins);
+
+  ranking.forEach((user, index) => {
+    const tr = document.createElement('tr');
+
+    [
+      '#' + (index + 1),
+      user.name,
+      user.level,
+      '🪙 ' + user.coins
+    ].forEach(value => {
+      tr.appendChild(makeElement('td', String(value)));
+    });
+
+    tbody.appendChild(tr);
+  });
 }
 
-$("chat-input").addEventListener("keydown",e=>{
-if(e.key==="Enter")sendMessage();
+function renderAll() {
+  document.getElementById('userNameDisplay').textContent =
+    db.user.name + ' ✏️';
+
+  document.getElementById('userCoins').textContent = db.user.coins;
+  document.getElementById('bankCoins').textContent = db.user.coins;
+  document.getElementById('bankLevel').textContent = db.user.level;
+
+  const badge = document.getElementById('userBadge');
+  badge.textContent = db.user.level;
+  badge.className = 'badge badge-' + db.user.level.toLowerCase();
+
+  const today = new Date().toLocaleDateString('en-CA');
+
+  document.getElementById('bonusStatus').textContent =
+    db.user.lastBonus === today
+      ? 'Você já resgatou seu bônus de hoje.'
+      : 'Seu bônus diário está disponível!';
+
+  renderFeed();
+  renderChat();
+  renderRanking();
+}
+
+function createPost() {
+  const type = document.getElementById('postType').value;
+  const title = document.getElementById('postTitle').value.trim();
+  const desc = document.getElementById('postDesc').value.trim();
+
+  if (!title || !desc) {
+    alert('Preencha o título e o conteúdo!');
+    return;
+  }
+
+  if (title.length > 100 || desc.length > 20000) {
+    alert('O conteúdo ultrapassa o limite permitido.');
+    return;
+  }
+
+  db.posts.push({
+    id: Date.now(),
+    type,
+    title,
+    author: db.user.name,
+    desc,
+    likes: 0
+  });
+
+  db.user.coins += 50;
+
+  document.getElementById('postTitle').value = '';
+  document.getElementById('postDesc').value = '';
+
+  save();
+  alert('Publicado com sucesso! Você ganhou 50 PandaCoins!');
+}
+
+function openReader(id) {
+  const post = db.posts.find(item => item.id === id);
+  if (!post) return;
+
+  document.getElementById('modalType').textContent = post.type;
+  document.getElementById('modalTitle').textContent = post.title;
+  document.getElementById('modalAuthor').textContent =
+    'Publicado por: ' + post.author;
+
+  const content = document.getElementById('modalContent');
+  content.replaceChildren();
+
+  const possibleURL = post.desc.trim();
+
+  if (/^https?:\/\/\S+$/i.test(possibleURL)) {
+    const link = document.createElement('a');
+    link.href = possibleURL;
+    link.target = '_blank';
+    link.rel = 'noopener noreferrer';
+    link.className = 'btn';
+    link.textContent = 'Acessar link externo 🔗';
+    content.appendChild(link);
+  } else {
+    content.textContent = post.desc;
+  }
+
+  document.getElementById('readerModal').style.display = 'flex';
+}
+
+function closeModal() {
+  document.getElementById('readerModal').style.display = 'none';
+}
+
+document.getElementById('readerModal').addEventListener('click', event => {
+  if (event.target.id === 'readerModal') closeModal();
 });
 
-async function loadRanking(){
-const {data,error}=await db.from("profiles")
-.select("display_name,coins").order("coins",{ascending:false}).limit(50);
-if(error){console.error(error);return;}
-$("ranking-list").innerHTML=data.map((p,i)=>`
-<p>${i+1}º 🐼 ${safe(p.display_name)} — 🪙 ${Number(p.coins)||0}</p>`).join("");
-}
-
-db.auth.onAuthStateChange((event,session)=>{
-if(session&&!user)setTimeout(()=>start(),0);
+document.addEventListener('keydown', event => {
+  if (event.key === 'Escape') closeModal();
 });
 
-(async()=>{
-const {data}=await db.auth.getSession();
-if(data.session)await start();
-})();
+function likePost(id) {
+  if (db.likedPosts.includes(id)) return;
+
+  const post = db.posts.find(item => item.id === id);
+  if (!post) return;
+
+  db.likedPosts.push(id);
+  post.likes = (post.likes || 0) + 1;
+  db.user.coins += 5;
+
+  save();
+}
+
+function dailyBonus() {
+  const today = new Date().toLocaleDateString('en-CA');
+
+  if (db.user.lastBonus === today) {
+    alert('Você já recebeu seu bônus hoje!');
+    return;
+  }
+
+  db.user.lastBonus = today;
+  db.user.coins += 30;
+
+  save();
+  alert('Parabéns! Você recebeu 30 PandaCoins!');
+}
+
+function upgradeRank(newLevel, cost) {
+  const levels = ['Bronze', 'Prata', 'Ouro', 'Pro'];
+
+  if (!levels.includes(newLevel)) return;
+
+  const currentIndex = levels.indexOf(db.user.level);
+  const newIndex = levels.indexOf(newLevel);
+
+  if (newIndex <= currentIndex) {
+    alert('Você já possui essa patente ou uma superior!');
+    return;
+  }
+
+  if (db.user.coins < cost) {
+    alert('Saldo insuficiente!');
+    return;
+  }
+
+  db.user.coins -= cost;
+  db.user.level = newLevel;
+
+  save();
+  alert('Parabéns! Você evoluiu para ' + newLevel + '!');
+}
+
+function sendMsg() {
+  const input = document.getElementById('chatInput');
+  const text = input.value.trim();
+
+  if (!text) return;
+
+  db.messages.push({
+    sender: db.user.name,
+    level: db.user.level,
+    text,
+    isMe: true
+  });
+
+  // Limita o histórico para evitar crescimento excessivo.
+  if (db.messages.length > 200) {
+    db.messages = db.messages.slice(-200);
+  }
+
+  input.value = '';
+  save();
+}
+
+function unlockAdm() {
+  // Senha demonstrativa: altere no código antes de publicar.
+  // Não é uma autenticação segura, pois o código é público.
+  if (document.getElementById('admPass').value === 'admin123') {
+    document.getElementById('admControls').style.display = 'block';
+    alert('Painel local desbloqueado!');
+  } else {
+    alert('Senha incorreta!');
+  }
+}
+
+function addCoins(amount) {
+  if (!Number.isFinite(amount) || amount <= 0) return;
+
+  db.user.coins += amount;
+  save();
+
+  alert(amount + ' PandaCoins adicionados!');
+}
+
+function resetSite() {
+  const confirmation = confirm(
+    'Tem certeza? Todos os dados locais do PandaVerso serão apagados.'
+  );
+
+  if (!confirmation) return;
+
+  localStorage.removeItem(STORAGE_KEY);
+  location.reload();
+}
+renderAll();
 </script>
+
 </body>
 </html>
